@@ -1,0 +1,11 @@
+/* M2 Project - IA and Semantic Web */
+
+/* 1st Milestone : */
+/* Question 1 : */
+The group is formed by :
+- Gabriel EYAFAA JEEVAN KUMAR
+- Julien MERCIER
+- Paul MARQUES
+- Tom REDON
+
+/* Question 2 : */
