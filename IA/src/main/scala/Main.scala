@@ -5,5 +5,5 @@ object Main extends App {
   ds.testFaker()
   println(ds.numberOfStudents())
   ds.addDataToStudents()
-  ds.nameOfStudents()
+  ds.firstNameOfStudents()
 }
