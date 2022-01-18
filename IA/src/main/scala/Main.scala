@@ -4,4 +4,6 @@ object Main extends App {
   println(ds.size())
   ds.testFaker()
   println(ds.numberOfStudents())
+  ds.addDataToStudents()
+  ds.nameOfStudents()
 }
