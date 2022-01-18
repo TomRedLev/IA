@@ -1,7 +1,7 @@
 import com.github.javafaker.Faker
 import org.apache.jena.rdf.model.ModelFactory
 
-class DatasetTreatment(val dsSource : String) {
+case class DatasetTreatment(dsSource : String) {
   /* Loading the datafile : */
   val model = ModelFactory.createDefaultModel()
   val typeProp = "http://www.w3.org/1999/02/22-rdf-syntax-ns#type"
@@ -30,8 +30,4 @@ class DatasetTreatment(val dsSource : String) {
     iterator.toList.size()
     //iterator.forEach(x => println(x))
   }
-}
-
-object DatasetTreatment {
-  def apply(dsSource : String) = new DatasetTreatment(dsSource)
 }
