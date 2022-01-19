@@ -1,9 +1,8 @@
 import com.github.javafaker.Faker
 import org.apache.jena.rdf.model.{Model, ModelFactory, Resource}
 
-import java.sql.Date
 import java.text.SimpleDateFormat
-import java.time.LocalDate
+import java.util.Date
 import scala.util.Random
 
 case class DatasetTreatment(dsSource: String) {
@@ -117,7 +116,7 @@ case class DatasetTreatment(dsSource: String) {
         model.getResource(x.getURI),
         model.getProperty(vdProp),
         model.createResource(faker.date().between(new SimpleDateFormat("dd-MM-yyyy").parse("01-01-2020"),
-          new SimpleDateFormat("dd-MM-yyyy").parse("01-01-2022")).toString))
+          new Date()).toString))
       )
     }
     else {
