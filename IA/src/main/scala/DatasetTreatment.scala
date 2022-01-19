@@ -1,6 +1,9 @@
 import com.github.javafaker.Faker
 import org.apache.jena.rdf.model.{ModelFactory, Resource}
 
+import java.text.SimpleDateFormat
+import java.time.format.DateTimeFormatter
+
 case class DatasetTreatment(dsSource : String) {
   /* Loading the datafile : */
   val model = ModelFactory.createDefaultModel()
@@ -9,9 +12,12 @@ case class DatasetTreatment(dsSource : String) {
   val typeProp = "http://www.w3.org/1999/02/22-rdf-syntax-ns#type"
   val studRes = "http://swat.cse.lehigh.edu/onto/univ-bench.owl#UndergraduateStudent"
 
-  val studFirstNameProp = "http://swat.cse.lehigh.edu/onto/univ-bench.owl#StudentFirstName"
-  val studLastNameProp = "http://swat.cse.lehigh.edu/onto/univ-bench.owl#StudentLastName"
-  val studIdentifierProp = "http://swat.cse.lehigh.edu/onto/univ-bench.owl#StudentName"
+  val identifierProp = "http://swat.cse.lehigh.edu/onto/univ-bench.owl#Name"
+  val firstNameProp = "http://swat.cse.lehigh.edu/onto/univ-bench.owl#FirstName"
+  val lastNameProp = "http://swat.cse.lehigh.edu/onto/univ-bench.owl#LastName"
+  val genderProp = "http://swat.cse.lehigh.edu/onto/univ-bench.owl#Gender"
+  val zipcodeProp = "http://swat.cse.lehigh.edu/onto/univ-bench.owl#Zipcode"
+  val birthdayProp = "http://swat.cse.lehigh.edu/onto/univ-bench.owl#Birthday"
 
   def load() = model.read(dsSource, "TTL")
 
@@ -35,7 +41,7 @@ case class DatasetTreatment(dsSource : String) {
   }
 
   def firstNameOfStudents()= {
-    val rdfType = model.createProperty(studFirstNameProp)
+    val rdfType = model.createProperty(firstNameProp)
     val iterator = model.listObjectsOfProperty(rdfType).toList
     iterator.forEach(println)
   }
@@ -43,7 +49,7 @@ case class DatasetTreatment(dsSource : String) {
   def addIdentifier(x : Resource) = {
     model.add(model.createStatement(
       model.getResource(x.getURI),
-      model.getProperty(studIdentifierProp),
+      model.getProperty(identifierProp),
       model.createResource(faker.idNumber().valid())
     ))
   }
@@ -51,7 +57,7 @@ case class DatasetTreatment(dsSource : String) {
   def addFirstName(x : Resource) = {
     model.add(model.createStatement(
       model.getResource(x.getURI),
-      model.getProperty(studFirstNameProp),
+      model.getProperty(firstNameProp),
       model.createResource(faker.name().firstName()))
     )
   }
@@ -59,7 +65,7 @@ case class DatasetTreatment(dsSource : String) {
   def addLastName(x : Resource) = {
     model.add(model.createStatement(
       model.getResource(x.getURI),
-      model.getProperty(studLastNameProp),
+      model.getProperty(lastNameProp),
       model.createResource(faker.name().lastName()))
     )
   }
@@ -67,8 +73,25 @@ case class DatasetTreatment(dsSource : String) {
   def addGender(x : Resource) = {
     model.add(model.createStatement(
       model.getResource(x.getURI),
-      model.getProperty(studGenderProp),
-      model.createResource(faker
+      model.getProperty(genderProp),
+      model.createResource(faker.demographic().sex()))
+    )
+  }
+
+  def addZipcode(x : Resource) = {
+    model.add(model.createStatement(
+      model.getResource(x.getURI),
+      model.getProperty(zipcodeProp),
+      model.createResource(faker.address().zipCode()))
+    )
+  }
+
+  def addBirthday(x : Resource, startDate : String, finishDate : String) = {
+    model.add(model.createStatement(
+      model.getResource(x.getURI),
+      model.getProperty(birthdayProp),
+      model.createResource(faker.date().between(new SimpleDateFormat("dd/MM/yyyy").parse(startDate),
+        new SimpleDateFormat("dd/MM/yyyy").parse(finishDate)).toString))
     )
   }
 
@@ -82,6 +105,9 @@ case class DatasetTreatment(dsSource : String) {
       addIdentifier(x)
       addFirstName(x)
       addLastName(x)
+      addGender(x)
+      addZipcode(x)
+      addBirthday(x, "01/01/1992", "01/01/2002")
     })
   }
 }
