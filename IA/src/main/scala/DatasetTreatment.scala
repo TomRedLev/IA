@@ -4,6 +4,7 @@ import org.apache.jena.rdf.model.{Model, ModelFactory, Resource}
 import java.text.SimpleDateFormat
 import java.util.Date
 import scala.util.Random
+import scala.util.control.Breaks.{break, breakable}
 
 case class DatasetTreatment(dsSource: String) {
   /* Loading the datafile : */
@@ -11,7 +12,7 @@ case class DatasetTreatment(dsSource: String) {
   val faker = new Faker();
 
 
-  val vaccines = List("Pfizer", "Moderna", "AstraZeneca", "SpoutnikV", "CanSinoBio")
+  val vaccines = Map("Pfizer" -> 40, "Moderna" -> 30, "AstraZeneca" -> 20, "SpoutnikV" -> 5, "CanSinoBio" -> 5)
 
   val typeProp = "http://www.w3.org/1999/02/22-rdf-syntax-ns#type"
   val studRes = "http://swat.cse.lehigh.edu/onto/univ-bench.owl#UndergraduateStudent"
@@ -87,11 +88,13 @@ case class DatasetTreatment(dsSource: String) {
   }
 
   def addGender(x: Resource) = {
+    val gender = faker.demographic().sex()
     model.add(model.createStatement(
       model.getResource(x.getURI),
       model.getProperty(genderProp),
-      model.createResource(faker.demographic().sex()))
+      model.createResource(gender))
     )
+    gender
   }
 
   def addZipcode(x: Resource) = {
@@ -129,12 +132,22 @@ case class DatasetTreatment(dsSource: String) {
   }
 
   def addVaccineName(x: Resource, pr: Boolean): Model = {
-
     if (pr) {
+      var vaccine = ""
+      while (vaccine.equals("")) {
+        breakable {
+          for ((k,v) <- vaccines)  {
+            if (Random.nextInt(100) < v) {
+              vaccine = k
+              break
+            }
+          }
+        }
+      }
       model.add(model.createStatement(
         model.getResource(x.getURI),
         model.getProperty(vnProp),
-        model.createResource(vaccines(faker.random().nextInt(vaccines.size)))
+        model.createResource(vaccine)
       ))
     }
     else {
@@ -149,7 +162,7 @@ case class DatasetTreatment(dsSource: String) {
 
 
   // Need to add the others datas and to create it for teachers
-  def addDataToStudents(vaccinedProportion: Int): Unit = {
+  def addDataToStudents(vaccinedProportion: Int, vaccinedFemaleProportion : Int, vaccinedMaleProportion : Int): Unit = {
     val rdfType = model.createProperty(typeProp)
     val obj = model.createResource(studRes)
     val iterator = model.listSubjectsWithProperty(rdfType, obj)
@@ -157,10 +170,15 @@ case class DatasetTreatment(dsSource: String) {
       addIdentifier(x)
       addFirstName(x)
       addLastName(x)
-      addGender(x)
+      val gender = addGender(x)
       addZipcode(x)
       addBirthday(x, 20, 30)
-      val pr = Random.nextInt(100) < vaccinedProportion
+      var pr = false
+      if (gender.equals("Female")) {
+        pr = Random.nextInt(100) < vaccinedProportion && Random.nextInt(100) < vaccinedFemaleProportion
+      } else {
+        pr = Random.nextInt(100) < vaccinedProportion &&  Random.nextInt(100) < vaccinedMaleProportion
+      }
       addVaccineDate(x, pr)
       addVaccineName(x, pr)
 
