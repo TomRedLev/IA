@@ -6,4 +6,5 @@ object Main extends App {
   println(ds.numberOfStudents()) //Commented
   ds.addDataToStudents(100, 100, 100)
   ds.fullStudents() //Commented
+  ds.save("final_version.ttl")
 }

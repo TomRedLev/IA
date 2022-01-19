@@ -1,6 +1,9 @@
 import com.github.javafaker.Faker
 import org.apache.jena.rdf.model.{Model, ModelFactory, Resource}
+import org.apache.jena.riot
+import org.apache.jena.riot.{RDFDataMgr, RDFFormat}
 
+import java.io.{FileOutputStream, FileWriter, IOException}
 import java.text.SimpleDateFormat
 import java.util.Date
 import scala.util.Random
@@ -29,6 +32,21 @@ case class DatasetTreatment(dsSource: String) {
   def load() = model.read(dsSource, "TTL")
 
   def size() = model.size()
+
+  def save(fileName : String) = {
+    val out = new FileWriter(fileName)
+    try {
+      RDFDataMgr.write(new FileOutputStream(fileName), model, RDFFormat.TTL);
+    }
+    finally {
+      try {
+        out.close()
+      }
+      catch {
+        case e : IOException =>
+      }
+    }
+  }
 
   /* Testing Java Faker : */
   def testFaker() = {
@@ -181,7 +199,6 @@ case class DatasetTreatment(dsSource: String) {
       }
       addVaccineDate(x, pr)
       addVaccineName(x, pr)
-
     })
   }
 }

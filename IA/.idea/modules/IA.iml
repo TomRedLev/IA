@@ -11,21 +11,46 @@
     </content>
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />
+    <orderEntry type="library" name="sbt: com.apicatalog:titanium-json-ld:1.1.0:jar" level="project" />
+    <orderEntry type="library" name="sbt: com.fasterxml.jackson.core:jackson-annotations:2.13.0:jar" level="project" />
+    <orderEntry type="library" name="sbt: com.fasterxml.jackson.core:jackson-core:2.13.0:jar" level="project" />
+    <orderEntry type="library" name="sbt: com.fasterxml.jackson.core:jackson-databind:2.13.0:jar" level="project" />
     <orderEntry type="library" name="sbt: com.github.andrewoma.dexx:collection:0.7:jar" level="project" />
     <orderEntry type="library" name="sbt: com.github.javafaker:javafaker:1.0.2:jar" level="project" />
+    <orderEntry type="library" name="sbt: com.github.jsonld-java:jsonld-java:0.13.3:jar" level="project" />
     <orderEntry type="library" name="sbt: com.github.mifmif:generex:1.0.2:jar" level="project" />
+    <orderEntry type="library" name="sbt: com.google.protobuf:protobuf-java:3.17.3:jar" level="project" />
     <orderEntry type="library" name="sbt: commons-cli:commons-cli:1.5.0:jar" level="project" />
     <orderEntry type="library" name="sbt: commons-codec:commons-codec:1.15:jar" level="project" />
     <orderEntry type="library" name="sbt: commons-io:commons-io:2.11.0:jar" level="project" />
+    <orderEntry type="library" name="sbt: commons-logging:commons-logging:1.2:jar" level="project" />
     <orderEntry type="library" name="sbt: dk.brics.automaton:automaton:1.11-8:jar" level="project" />
+    <orderEntry type="library" name="sbt: javax.annotation:javax.annotation-api:1.3.2:jar" level="project" />
     <orderEntry type="library" name="sbt: org.apache.commons:commons-compress:1.21:jar" level="project" />
     <orderEntry type="library" name="sbt: org.apache.commons:commons-csv:1.9.0:jar" level="project" />
     <orderEntry type="library" name="sbt: org.apache.commons:commons-lang3:3.12.0:jar" level="project" />
+    <orderEntry type="library" name="sbt: org.apache.httpcomponents:httpclient-cache:4.5.13:jar" level="project" />
+    <orderEntry type="library" name="sbt: org.apache.httpcomponents:httpclient:4.5.13:jar" level="project" />
+    <orderEntry type="library" name="sbt: org.apache.httpcomponents:httpcore:4.4.13:jar" level="project" />
+    <orderEntry type="library" name="sbt: org.apache.jena:jena-arq:4.3.2:jar" level="project" />
     <orderEntry type="library" name="sbt: org.apache.jena:jena-base:4.3.2:jar" level="project" />
     <orderEntry type="library" name="sbt: org.apache.jena:jena-core:4.3.2:jar" level="project" />
+    <orderEntry type="library" name="sbt: org.apache.jena:jena-dboe-base:4.3.2:jar" level="project" />
+    <orderEntry type="library" name="sbt: org.apache.jena:jena-dboe-index:4.3.2:jar" level="project" />
+    <orderEntry type="library" name="sbt: org.apache.jena:jena-dboe-storage:4.3.2:jar" level="project" />
+    <orderEntry type="library" name="sbt: org.apache.jena:jena-dboe-trans-data:4.3.2:jar" level="project" />
+    <orderEntry type="library" name="sbt: org.apache.jena:jena-dboe-transaction:4.3.2:jar" level="project" />
     <orderEntry type="library" name="sbt: org.apache.jena:jena-iri:4.3.2:jar" level="project" />
+    <orderEntry type="library" name="sbt: org.apache.jena:jena-rdfconnection:4.3.2:jar" level="project" />
+    <orderEntry type="library" name="sbt: org.apache.jena:jena-shacl:4.3.2:jar" level="project" />
     <orderEntry type="library" name="sbt: org.apache.jena:jena-shaded-guava:4.3.2:jar" level="project" />
+    <orderEntry type="library" name="sbt: org.apache.jena:jena-shex:4.3.2:jar" level="project" />
+    <orderEntry type="library" name="sbt: org.apache.jena:jena-tdb2:4.3.2:jar" level="project" />
+    <orderEntry type="library" name="sbt: org.apache.jena:jena-tdb:4.3.2:jar" level="project" />
+    <orderEntry type="library" name="sbt: org.apache.thrift:libthrift:0.15.0:jar" level="project" />
+    <orderEntry type="library" name="sbt: org.glassfish:jakarta.json:2.0.1:jar" level="project" />
     <orderEntry type="library" name="sbt: org.scala-lang:scala-library:2.13.8:jar" level="project" />
+    <orderEntry type="library" name="sbt: org.slf4j:jcl-over-slf4j:1.7.32:jar" level="project" />
     <orderEntry type="library" name="sbt: org.slf4j:slf4j-api:1.7.32:jar" level="project" />
     <orderEntry type="library" name="sbt: org.slf4j:slf4j-simple:1.7.9:jar" level="project" />
     <orderEntry type="library" name="sbt: org.yaml:snakeyaml:1.23:android:jar" level="project" />
