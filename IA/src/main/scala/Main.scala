@@ -1,9 +1,9 @@
 object Main extends App {
   val ds = DatasetTreatment("file:lubm1.ttl")
   ds.load()
-  println(ds.size())
-  ds.testFaker()
-  println(ds.numberOfStudents())
+  println(ds.size()) //Commented
+  ds.testFaker() //Commented
+  println(ds.numberOfStudents()) //Commented
   ds.addDataToStudents()
-  ds.firstNameOfStudents()
+  ds.fullStudents() //Commented
 }

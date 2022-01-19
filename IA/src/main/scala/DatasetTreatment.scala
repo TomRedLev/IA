@@ -12,7 +12,7 @@ case class DatasetTreatment(dsSource : String) {
   val typeProp = "http://www.w3.org/1999/02/22-rdf-syntax-ns#type"
   val studRes = "http://swat.cse.lehigh.edu/onto/univ-bench.owl#UndergraduateStudent"
 
-  val identifierProp = "http://swat.cse.lehigh.edu/onto/univ-bench.owl#Name"
+  val identifierProp = "http://swat.cse.lehigh.edu/onto/univ-bench.owl#Identifier"
   val firstNameProp = "http://swat.cse.lehigh.edu/onto/univ-bench.owl#FirstName"
   val lastNameProp = "http://swat.cse.lehigh.edu/onto/univ-bench.owl#LastName"
   val genderProp = "http://swat.cse.lehigh.edu/onto/univ-bench.owl#Gender"
@@ -32,7 +32,6 @@ case class DatasetTreatment(dsSource : String) {
     println(name + ", " + firstName + ", " + lastName + ", " + streetAddress)
   }
 
-  /* Checking the number of students : */
   def numberOfStudents()= {
     val rdfType = model.createProperty(typeProp)
     val obj = model.createResource(studRes)
@@ -40,10 +39,19 @@ case class DatasetTreatment(dsSource : String) {
     iterator.toList.size()
   }
 
-  def firstNameOfStudents()= {
-    val rdfType = model.createProperty(firstNameProp)
-    val iterator = model.listObjectsOfProperty(rdfType).toList
-    iterator.forEach(println)
+  def fullStudents()= {
+    val rdfType = model.createProperty(typeProp)
+    val obj = model.createResource(studRes)
+    val iterator = model.listSubjectsWithProperty(rdfType, obj).toList
+    iterator.forEach(x => {
+      val iter = model.listObjectsOfProperty(x.asResource(), model.createProperty(identifierProp)).toList
+      val iter2 = model.listObjectsOfProperty(x.asResource(), model.createProperty(firstNameProp)).toList
+      val iter3 = model.listObjectsOfProperty(x.asResource(), model.createProperty(lastNameProp)).toList
+      val iter4 = model.listObjectsOfProperty(x.asResource(), model.createProperty(genderProp)).toList
+      val iter5 = model.listObjectsOfProperty(x.asResource(), model.createProperty(zipcodeProp)).toList
+      val iter6 = model.listObjectsOfProperty(x.asResource(), model.createProperty(birthdayProp)).toList
+      println(iter.get(0) + " " + iter2.get(0) + " " + iter3.get(0) + " " + iter4.get(0) + " " + iter5.get(0) + " " + iter6.get(0))
+    })
   }
 
   def addIdentifier(x : Resource) = {
@@ -86,13 +94,12 @@ case class DatasetTreatment(dsSource : String) {
     )
   }
 
-  def addBirthday(x : Resource, startDate : String, finishDate : String) = {
+  def addBirthday(x : Resource, startAge : Int, finishAge : Int) = {
     model.add(model.createStatement(
       model.getResource(x.getURI),
       model.getProperty(birthdayProp),
-      model.createResource(faker.date().between(new SimpleDateFormat("dd/MM/yyyy").parse(startDate),
-        new SimpleDateFormat("dd/MM/yyyy").parse(finishDate)).toString))
-    )
+      model.createResource(faker.date().birthday(startAge, finishAge).toString)
+    ))
   }
 
 
@@ -107,7 +114,9 @@ case class DatasetTreatment(dsSource : String) {
       addLastName(x)
       addGender(x)
       addZipcode(x)
-      addBirthday(x, "01/01/1992", "01/01/2002")
+      addBirthday(x, 20, 30)
+      //addVaccineDate(x)
+      //addVaccineName(x)
     })
   }
 }
