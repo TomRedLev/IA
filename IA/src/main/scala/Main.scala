@@ -4,6 +4,6 @@ object Main extends App {
   println(ds.size()) //Commented
   ds.testFaker() //Commented
   println(ds.numberOfStudents()) //Commented
-  ds.addDataToStudents()
+  ds.addDataToStudents(52)
   ds.fullStudents() //Commented
 }

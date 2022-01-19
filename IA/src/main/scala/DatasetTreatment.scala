@@ -1,8 +1,10 @@
 import com.github.javafaker.Faker
 import org.apache.jena.rdf.model.{ModelFactory, Resource}
 
+import java.sql.Date
 import java.text.SimpleDateFormat
-import java.time.format.DateTimeFormatter
+import java.time.LocalDate
+import scala.util.Random
 
 case class DatasetTreatment(dsSource : String) {
   /* Loading the datafile : */
@@ -50,7 +52,8 @@ case class DatasetTreatment(dsSource : String) {
       val iter4 = model.listObjectsOfProperty(x.asResource(), model.createProperty(genderProp)).toList
       val iter5 = model.listObjectsOfProperty(x.asResource(), model.createProperty(zipcodeProp)).toList
       val iter6 = model.listObjectsOfProperty(x.asResource(), model.createProperty(birthdayProp)).toList
-      println(iter.get(0) + " " + iter2.get(0) + " " + iter3.get(0) + " " + iter4.get(0) + " " + iter5.get(0) + " " + iter6.get(0))
+      val iter7 = model.listObjectsOfProperty(x.asResource(), model.createProperty(birthdayProp)).toList
+      println(iter.get(0) + " " + iter2.get(0) + " " + iter3.get(0) + " " + iter4.get(0) + " " + iter5.get(0) + " " + iter6.get(0) + " " + iter7.get(0))
     })
   }
 
@@ -98,13 +101,22 @@ case class DatasetTreatment(dsSource : String) {
     model.add(model.createStatement(
       model.getResource(x.getURI),
       model.getProperty(birthdayProp),
-      model.createResource(faker.date().birthday(startAge, finishAge).toString)
-    ))
+      model.createResource(faker.date().birthday(startAge, finishAge).toString))
+    )
+  }
+
+  def addVaccineDate(x : Resource): Unit = {
+    model.add(model.createStatement(
+      model.getResource(x.getURI),
+      model.getProperty(birthdayProp),
+      model.createResource(faker.date().between(new SimpleDateFormat("dd-MM-yyyy").parse("01-01-2020"),
+        new SimpleDateFormat("dd-MM-yyyy").parse("01-01-2022")).toString))
+    )
   }
 
 
   // Need to add the others datas and to create it for teachers
-  def addDataToStudents(): Unit = {
+  def addDataToStudents(vaccinedProportion : Int): Unit = {
     val rdfType = model.createProperty(typeProp)
     val obj = model.createResource(studRes)
     val iterator = model.listSubjectsWithProperty(rdfType, obj)
@@ -115,8 +127,11 @@ case class DatasetTreatment(dsSource : String) {
       addGender(x)
       addZipcode(x)
       addBirthday(x, 20, 30)
-      //addVaccineDate(x)
-      //addVaccineName(x)
+      if (Random.nextInt(100) < vaccinedProportion) {
+        addVaccineDate(x)
+        //addVaccineName(x)
+      }
+
     })
   }
 }
