@@ -1,4 +1,5 @@
 import com.github.javafaker.Faker
+import org.apache.jena.ontology.OntModelSpec
 import org.apache.jena.rdf.model.{Model, ModelFactory, Resource}
 import org.apache.jena.riot
 import org.apache.jena.riot.{RDFDataMgr, RDFFormat}
@@ -13,7 +14,6 @@ case class DatasetTreatment(dsSource: String) {
   /* Loading the datafile : */
   val model = ModelFactory.createDefaultModel()
   val faker = new Faker();
-
 
   val vaccines = Map("Pfizer" -> 40, "Moderna" -> 30, "AstraZeneca" -> 20, "SpoutnikV" -> 5, "CanSinoBio" -> 5)
 
@@ -64,9 +64,9 @@ case class DatasetTreatment(dsSource: String) {
     iterator.toList.size()
   }
 
-  def fullStudents() = {
+  def displayEveryone(res : String) = {
     val rdfType = model.createProperty(typeProp)
-    val obj = model.createResource(studRes)
+    val obj = model.createResource(res)
     val iterator = model.listSubjectsWithProperty(rdfType, obj).toList
     iterator.forEach(x => {
       val iter = model.listObjectsOfProperty(x.asResource(), model.createProperty(identifierProp)).toList
@@ -77,7 +77,7 @@ case class DatasetTreatment(dsSource: String) {
       val iter6 = model.listObjectsOfProperty(x.asResource(), model.createProperty(birthdayProp)).toList
       val iter7 = model.listObjectsOfProperty(x.asResource(), model.createProperty(vdProp)).toList
       val iter8 = model.listObjectsOfProperty(x.asResource(), model.createProperty(vnProp)).toList
-      println(iter.get(0) + " " + iter2.get(0) + " " + iter3.get(0) + " " + iter4.get(0) + " " + iter5.get(0) + " " + iter6.get(0) + " " + iter7.get(0) + " " + iter8.get(0))
+      println(res + " " + iter.get(0) + " " + iter2.get(0) + " " + iter3.get(0) + " " + iter4.get(0) + " " + iter5.get(0) + " " + iter6.get(0) + " " + iter7.get(0) + " " + iter8.get(0))
     })
   }
 
@@ -180,9 +180,9 @@ case class DatasetTreatment(dsSource: String) {
 
 
   // Need to add the others datas and to create it for teachers
-  def addDataToStudents(vaccinedProportion: Int, vaccinedFemaleProportion : Int, vaccinedMaleProportion : Int): Unit = {
+  def addDatasToEveryoneBis(vaccinedProportion: Int, vaccinedFemaleProportion : Int, vaccinedMaleProportion : Int, res : String): Unit = {
     val rdfType = model.createProperty(typeProp)
-    val obj = model.createResource(studRes)
+    val obj = model.createResource(res)
     val iterator = model.listSubjectsWithProperty(rdfType, obj)
     iterator.forEach(x => {
       addIdentifier(x)
@@ -199,6 +199,18 @@ case class DatasetTreatment(dsSource: String) {
       }
       addVaccineDate(x, pr)
       addVaccineName(x, pr)
+    })
+  }
+
+
+  def addDatasToEveryone(vaccinedProportion: Int, vaccinedFemaleProportion : Int, vaccinedMaleProportion : Int): Unit = {
+    val ontology = ModelFactory.createOntologyModel(OntModelSpec.OWL_MEM_MICRO_RULE_INF)
+    ontology.read("univ-bench.owl")
+    val persons = ontology.getOntClass("http://swat.cse.lehigh.edu/onto/univ-bench.owl#Person")
+    val sc = persons.listSubClasses(false)
+    sc.forEach(x => {
+      addDatasToEveryoneBis(vaccinedProportion, vaccinedFemaleProportion, vaccinedMaleProportion, x.getURI)
+      displayEveryone(x.getURI)
     })
   }
 }

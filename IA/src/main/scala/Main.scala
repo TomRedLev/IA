@@ -4,7 +4,8 @@ object Main extends App {
   println(ds.size()) //Commented
   ds.testFaker() //Commented
   println(ds.numberOfStudents()) //Commented
-  ds.addDataToStudents(100, 100, 100)
-  ds.fullStudents() //Commented
+  //ds.addDataToStudents(100, 100, 100)
+  //ds.fullStudents() //Commented
+  ds.addDatasToEveryone(100, 100, 100)
   ds.save("final_version.ttl")
 }
