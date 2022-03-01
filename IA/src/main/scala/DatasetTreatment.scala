@@ -1,7 +1,6 @@
 import com.github.javafaker.Faker
 import org.apache.jena.ontology.OntModelSpec
 import org.apache.jena.rdf.model.{Model, ModelFactory, Resource}
-import org.apache.jena.riot
 import org.apache.jena.riot.{RDFDataMgr, RDFFormat}
 
 import java.io.{FileOutputStream, FileWriter, IOException}
@@ -12,8 +11,8 @@ import scala.util.control.Breaks.{break, breakable}
 
 case class DatasetTreatment(dsSource: String) {
   /* Loading the datafile : */
-  val model = ModelFactory.createDefaultModel()
-  val faker = new Faker();
+  val model: Model = ModelFactory.createDefaultModel()
+  val faker = new Faker()
 
   val vaccines = Map("Pfizer" -> 40, "Moderna" -> 30, "AstraZeneca" -> 20, "SpoutnikV" -> 5, "CanSinoBio" -> 5)
 
@@ -29,42 +28,42 @@ case class DatasetTreatment(dsSource: String) {
   val vdProp = "http://swat.cse.lehigh.edu/onto/univ-bench.owl#VaccineDate"
   val vnProp = "http://swat.cse.lehigh.edu/onto/univ-bench.owl#VaccineName"
 
-  def load() = model.read(dsSource, "TTL")
+  def load(): Model = model.read(dsSource, "TTL")
 
-  def size() = model.size()
+  def size(): Long = model.size()
 
-  def save(fileName : String) = {
+  def save(fileName : String): Unit = {
     val out = new FileWriter(fileName)
     try {
-      RDFDataMgr.write(new FileOutputStream(fileName), model, RDFFormat.TTL);
+      RDFDataMgr.write(new FileOutputStream(fileName), model, RDFFormat.TTL)
     }
     finally {
       try {
         out.close()
       }
       catch {
-        case e : IOException =>
+        case _: IOException =>
       }
     }
   }
 
   /* Testing Java Faker : */
-  def testFaker() = {
-    val name = faker.name().fullName();
-    val firstName = faker.name().firstName();
-    val lastName = faker.name().lastName();
-    val streetAddress = faker.address().streetAddress();
+  def testFaker(): Unit = {
+    val name = faker.name().fullName()
+    val firstName = faker.name().firstName()
+    val lastName = faker.name().lastName()
+    val streetAddress = faker.address().streetAddress()
     println(name + ", " + firstName + ", " + lastName + ", " + streetAddress)
   }
 
-  def numberOfStudents() = {
+  def numberOfStudents(): Int = {
     val rdfType = model.createProperty(typeProp)
     val obj = model.createResource(studRes)
     val iterator = model.listSubjectsWithProperty(rdfType, obj)
     iterator.toList.size()
   }
 
-  def displayEveryone(res : String) = {
+  def displayEveryone(res : String): Unit = {
     val rdfType = model.createProperty(typeProp)
     val obj = model.createResource(res)
     val iterator = model.listSubjectsWithProperty(rdfType, obj).toList
@@ -81,7 +80,7 @@ case class DatasetTreatment(dsSource: String) {
     })
   }
 
-  def addIdentifier(x: Resource) = {
+  def addIdentifier(x: Resource): Model = {
     model.add(model.createStatement(
       model.getResource(x.getURI),
       model.getProperty(identifierProp),
@@ -89,7 +88,7 @@ case class DatasetTreatment(dsSource: String) {
     ))
   }
 
-  def addFirstName(x: Resource) = {
+  def addFirstName(x: Resource): Model = {
     model.add(model.createStatement(
       model.getResource(x.getURI),
       model.getProperty(firstNameProp),
@@ -97,7 +96,7 @@ case class DatasetTreatment(dsSource: String) {
     )
   }
 
-  def addLastName(x: Resource) = {
+  def addLastName(x: Resource): Model = {
     model.add(model.createStatement(
       model.getResource(x.getURI),
       model.getProperty(lastNameProp),
@@ -105,7 +104,7 @@ case class DatasetTreatment(dsSource: String) {
     )
   }
 
-  def addGender(x: Resource) = {
+  def addGender(x: Resource): String = {
     val gender = faker.demographic().sex()
     model.add(model.createStatement(
       model.getResource(x.getURI),
@@ -115,7 +114,7 @@ case class DatasetTreatment(dsSource: String) {
     gender
   }
 
-  def addZipcode(x: Resource) = {
+  def addZipcode(x: Resource): Model = {
     model.add(model.createStatement(
       model.getResource(x.getURI),
       model.getProperty(zipcodeProp),
