@@ -8,4 +8,6 @@ object Main extends App {
   //ds.fullStudents() //Commented
   ds.addDatasToEveryone(50, 100, 50)
   ds.save("final_version.ttl")
+  ds.producer()
+  ds.consumer()
 }

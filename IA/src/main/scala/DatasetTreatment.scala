@@ -9,11 +9,20 @@ import java.text.SimpleDateFormat
 import java.util.{Date, Properties}
 import scala.util.Random
 import scala.util.control.Breaks.{break, breakable}
+import com.fasterxml.jackson.databind.ObjectMapper
+import com.fasterxml.jackson.databind.node.ObjectNode
+import org.apache.kafka.clients.consumer.KafkaConsumer
+import scala.collection.JavaConverters._
+
+import scala.collection.mutable.ListBuffer
 
 case class DatasetTreatment(dsSource: String) {
   /* Loading the datafile : */
   val model: Model = ModelFactory.createDefaultModel()
   val faker = new Faker()
+  val mapper = new ObjectMapper()
+  var user = mapper.createObjectNode()
+  var users = ListBuffer[ObjectNode]()
 
   val vaccines = Map("Pfizer" -> 40, "Moderna" -> 30, "AstraZeneca" -> 20, "SpoutnikV" -> 5, "CanSinoBio" -> 5)
   val sideeffects = Map("Injection site pain" -> "C0151828",
@@ -103,6 +112,7 @@ case class DatasetTreatment(dsSource: String) {
 
   def addIdentifier(x: Resource): Model = {
     val id = faker.idNumber().valid()
+    user.put("ID", id)
     model.add(model.createStatement(
       model.getResource(x.getURI),
       model.getProperty(identifierProp),
@@ -112,6 +122,7 @@ case class DatasetTreatment(dsSource: String) {
 
   def addFirstName(x: Resource): Model = {
     val fn = faker.name().firstName()
+    user.put("FirstName", fn)
     model.add(model.createStatement(
       model.getResource(x.getURI),
       model.getProperty(firstNameProp),
@@ -121,6 +132,7 @@ case class DatasetTreatment(dsSource: String) {
 
   def addLastName(x: Resource): Model = {
     val ln = faker.name().lastName()
+    user.put("LastName", ln)
     model.add(model.createStatement(
       model.getResource(x.getURI),
       model.getProperty(lastNameProp),
@@ -130,6 +142,7 @@ case class DatasetTreatment(dsSource: String) {
 
   def addGender(x: Resource): String = {
     val gender = faker.demographic().sex()
+    user.put("Gender", gender)
     model.add(model.createStatement(
       model.getResource(x.getURI),
       model.getProperty(genderProp),
@@ -140,6 +153,7 @@ case class DatasetTreatment(dsSource: String) {
 
   def addZipcode(x: Resource): Model = {
     val zip = faker.address().zipCode()
+    user.put("Zipcode", zip)
     model.add(model.createStatement(
       model.getResource(x.getURI),
       model.getProperty(zipcodeProp),
@@ -149,6 +163,7 @@ case class DatasetTreatment(dsSource: String) {
 
   def addBirthday(x: Resource, startAge: Int, finishAge: Int): Model = {
     val birth = faker.date().birthday(startAge, finishAge).toString
+    user.put("Birthdate", birth)
     model.add(model.createStatement(
       model.getResource(x.getURI),
       model.getProperty(birthdayProp),
@@ -167,6 +182,7 @@ case class DatasetTreatment(dsSource: String) {
     }
     else {
       date = "False"
+      user.put("VaccineDate", date)
       model.add(model.createStatement(
         model.getResource(x.getURI),
         model.getProperty(vdProp),
@@ -188,6 +204,7 @@ case class DatasetTreatment(dsSource: String) {
           }
         }
       }
+      user.put("Vaccine", vaccine)
       model.add(model.createStatement(
         model.getResource(x.getURI),
         model.getProperty(vnProp),
@@ -196,6 +213,7 @@ case class DatasetTreatment(dsSource: String) {
     }
     else {
       val vaccine = "None"
+      user.put("Vaccine", vaccine)
       model.add(model.createStatement(
         model.getResource(x.getURI),
         model.getProperty(vnProp),
@@ -220,6 +238,8 @@ case class DatasetTreatment(dsSource: String) {
           }
         }
       }
+      user.put("Sideeffect", se)
+      user.put("Sider", sider)
       model.add(model.createStatement(
         model.getResource(x.getURI),
         model.getProperty(seProp),
@@ -234,6 +254,8 @@ case class DatasetTreatment(dsSource: String) {
     else {
       val se = "None"
       val sider = "None"
+      user.put("Sideeffect", se)
+      user.put("Sider", sider)
       model.add(model.createStatement(
         model.getResource(x.getURI),
         model.getProperty(seProp),
@@ -254,6 +276,7 @@ case class DatasetTreatment(dsSource: String) {
     val obj = model.createResource(res)
     val iterator = model.listSubjectsWithProperty(rdfType, obj)
     iterator.forEach(x => {
+      user = mapper.createObjectNode()
       addIdentifier(x)
       addFirstName(x)
       addLastName(x)
@@ -269,6 +292,7 @@ case class DatasetTreatment(dsSource: String) {
       addVaccineDate(x, pr)
       addVaccineName(x, pr)
       addSideeffect(x, pr)
+      users += user
     })
   }
 
@@ -285,6 +309,7 @@ case class DatasetTreatment(dsSource: String) {
   }
 
   def producer() : Unit = {
+    val usersList = users.toList
     val props : Properties = new Properties()
     props.put("bootstrap.servers","localhost:9092")
     props.put("key.serializer",
@@ -295,20 +320,41 @@ case class DatasetTreatment(dsSource: String) {
     val producer = new KafkaProducer[String, String](props)
     val topic = "topic0"
     try {
-      // A MODIFIER
-      for (i <- 0 to 15) {
-        val record = new ProducerRecord[String, String](topic, i.toString, "My Site is sparkbyexamples.com " + i)
-        val metadata = producer.send(record)
-        printf(s"sent record(key=%s value=%s) " +
-          "meta(partition=%d, offset=%d)\n",
-          record.key(), record.value(),
-          metadata.get().partition(),
-          metadata.get().offset())
+      for (i <- 0 to usersList.length - 1) {
+        producer.send(new ProducerRecord[String, String](topic, i.toString, usersList(i).toString))
+        //println(usersList(i).toString)
       }
     }catch{
       case e:Exception => e.printStackTrace()
     }finally {
       producer.close()
+    }
+  }
+
+  def consumer() : Unit = {
+    val props:Properties = new Properties()
+    props.put("group.id", "test")
+    props.put("bootstrap.servers","localhost:9092")
+    props.put("key.deserializer",
+      "org.apache.kafka.common.serialization.StringDeserializer")
+    props.put("value.deserializer",
+      "org.apache.kafka.common.serialization.StringDeserializer")
+    props.put("enable.auto.commit", "true")
+    props.put("auto.commit.interval.ms", "1000")
+    val consumer = new KafkaConsumer(props)
+    val topics = List("topic0")
+    try {
+      consumer.subscribe(topics.asJava)
+      while (true) {
+        val records = consumer.poll(10)
+        for (record <- records.asScala) {
+          println(record.toString)
+        }
+      }
+    }catch{
+      case e:Exception => e.printStackTrace()
+    }finally {
+      consumer.close()
     }
   }
 }
