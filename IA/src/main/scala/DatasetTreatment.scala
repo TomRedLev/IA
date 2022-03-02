@@ -12,7 +12,10 @@ import scala.util.control.Breaks.{break, breakable}
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.databind.node.ObjectNode
 import org.apache.kafka.clients.consumer.KafkaConsumer
+
 import scala.collection.JavaConverters._
+import org.apache.avro.SchemaBuilder
+import org.apache.avro.generic.GenericData.Record
 
 import scala.collection.mutable.ListBuffer
 
@@ -23,6 +26,12 @@ case class DatasetTreatment(dsSource: String) {
   val mapper = new ObjectMapper()
   var user = mapper.createObjectNode()
   var users = ListBuffer[ObjectNode]()
+
+  val schema = SchemaBuilder.record("testRecord").fields().
+    requiredString("ID").requiredString("FirstName").requiredString("LastName")
+    .requiredString("Gender").requiredString("Zipcode").requiredString("Birthdate")
+    .requiredString("VaccineDate").requiredString("Vaccine").requiredString("Sideeffect")
+    .requiredString("Sider").endRecord()
 
   val vaccines = Map("Pfizer" -> 40, "Moderna" -> 30, "AstraZeneca" -> 20, "SpoutnikV" -> 5, "CanSinoBio" -> 5)
   val sideeffects = Map("Injection site pain" -> "C0151828",
@@ -174,6 +183,7 @@ case class DatasetTreatment(dsSource: String) {
   def addVaccineDate(x: Resource, pr: Boolean): Model = {
     var date = faker.date().between(new SimpleDateFormat("dd-MM-yyyy").parse("01-01-2020"), new Date()).toString
     if (pr) {
+      user.put("VaccineDate", date)
       model.add(model.createStatement(
         model.getResource(x.getURI),
         model.getProperty(vdProp),
@@ -321,8 +331,19 @@ case class DatasetTreatment(dsSource: String) {
     val topic = "topic0"
     try {
       for (i <- 0 to usersList.length - 1) {
-        producer.send(new ProducerRecord[String, String](topic, i.toString, usersList(i).toString))
-        //println(usersList(i).toString)
+        val record = new Record(schema)
+        record.put("ID", usersList(i).get("ID"))
+        record.put("FirstName", usersList(i).get("FirstName"))
+        record.put("LastName", usersList(i).get("LastName"))
+        record.put("Gender", usersList(i).get("Gender"))
+        record.put("Zipcode", usersList(i).get("Zipcode"))
+        record.put("Birthdate", usersList(i).get("Birthdate"))
+        record.put("VaccineDate", usersList(i).get("VaccineDate"))
+        record.put("Vaccine", usersList(i).get("Vaccine"))
+        record.put("Sideeffect", usersList(i).get("Sideeffect"))
+        record.put("Sider", usersList(i).get("Sider"))
+        producer.send(new ProducerRecord[String, String](topic, i.toString, record.toString))
+
       }
     }catch{
       case e:Exception => e.printStackTrace()

@@ -19,3 +19,5 @@ libraryDependencies += "org.apache.kafka" % "kafka-clients" % "2.8.0"
 libraryDependencies += "com.fasterxml.jackson.core" % "jackson-core" % "2.13.1"
 
 libraryDependencies += "com.fasterxml.jackson.core" % "jackson-databind" % "2.13.1"
+
+libraryDependencies += "com.twitter" % "bijection-avro_2.13" % "0.9.7"
