@@ -6,6 +6,6 @@ object Main extends App {
   println(ds.numberOfStudents()) //Commented
   //ds.addDataToStudents(100, 100, 100)
   //ds.fullStudents() //Commented
-  ds.addDatasToEveryone(100, 100, 100)
+  ds.addDatasToEveryone(50, 100, 50)
   ds.save("final_version.ttl")
 }
