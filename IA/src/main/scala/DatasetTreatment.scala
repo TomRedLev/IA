@@ -16,6 +16,9 @@ import org.apache.kafka.clients.consumer.KafkaConsumer
 import scala.collection.JavaConverters._
 import org.apache.avro.SchemaBuilder
 import org.apache.avro.generic.GenericData.Record
+import org.apache.kafka.common.serialization.Serdes
+import org.apache.kafka.streams.kstream.{KTable, Predicate, Printed}
+import org.apache.kafka.streams.{KafkaStreams, StreamsBuilder, StreamsConfig}
 
 import scala.collection.mutable.ListBuffer
 
@@ -32,8 +35,6 @@ case class DatasetTreatment(dsSource: String) {
     .requiredString("Gender").requiredString("Zipcode").requiredString("Age").requiredString("Birthdate")
     .requiredString("VaccineDate").requiredString("Vaccine").requiredString("Sideeffect")
     .requiredString("Sider").endRecord()
-  val schemaQ1 = SchemaBuilder.record("VaccinedPatient").fields().requiredString("ID").requiredString("Age").endRecord()
-
 
   val vaccines = Map("Pfizer" -> 40, "Moderna" -> 30, "AstraZeneca" -> 20, "SpoutnikV" -> 5, "CanSinoBio" -> 5)
   val sideeffects = Map("Injection site pain" -> "C0151828",
@@ -349,7 +350,6 @@ case class DatasetTreatment(dsSource: String) {
         record.put("Sider", usersList(i).get("Sider"))
         record.put("Age", usersList(i).get("Age"))
         producer.send(new ProducerRecord[String, String](topic, i.toString, record.toString))
-
       }
     }catch{
       case e:Exception => e.printStackTrace()
@@ -358,32 +358,6 @@ case class DatasetTreatment(dsSource: String) {
     }
   }
 
-
-  def producerQ1() : Unit = {
-    val usersList = users.toList
-    val props : Properties = new Properties()
-    props.put("bootstrap.servers","localhost:9092")
-    props.put("key.serializer",
-      "org.apache.kafka.common.serialization.StringSerializer")
-    props.put("value.serializer",
-      "org.apache.kafka.common.serialization.StringSerializer")
-    props.put("acks","all")
-    val producer = new KafkaProducer[String, String](props)
-    val topic = "topic0"
-    try {
-      for (i <- 0 to usersList.length - 1) {
-        val record = new Record(schemaQ1)
-        record.put("ID", usersList(i).get("ID"))
-        record.put("Age", usersList(i).get("Age"))
-        producer.send(new ProducerRecord[String, String](topic, i.toString, record.toString))
-
-      }
-    }catch{
-      case e:Exception => e.printStackTrace()
-    }finally {
-      producer.close()
-    }
-  }
 
   def consumer() : Unit = {
     val props:Properties = new Properties()
@@ -410,5 +384,18 @@ case class DatasetTreatment(dsSource: String) {
     }finally {
       consumer.close()
     }
+  }
+
+  def kafkaStream(): Unit = {
+    val props = new Properties()
+    props.put(StreamsConfig.APPLICATION_ID_CONFIG, "firstApp_id")
+    props.put(StreamsConfig.BOOTSTRAP_SERVERS_CONFIG, "localhost:9092")
+    val streamingConfig = new StreamsConfig(props)
+    val stringSerde = Serdes.String
+    val builder = new StreamsBuilder
+    val patientLines = builder.stream("topic0")
+    patientLines
+
+
   }
 }

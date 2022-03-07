@@ -16,6 +16,8 @@ libraryDependencies += "org.apache.jena" % "apache-jena-libs" % "4.3.2"
 
 libraryDependencies += "org.apache.kafka" % "kafka-clients" % "2.8.0"
 
+libraryDependencies += "org.apache.kafka" % "kafka-streams" % "2.8.0"
+
 libraryDependencies += "com.fasterxml.jackson.core" % "jackson-core" % "2.13.1"
 
 libraryDependencies += "com.fasterxml.jackson.core" % "jackson-databind" % "2.13.1"
