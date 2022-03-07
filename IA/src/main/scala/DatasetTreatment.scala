@@ -29,9 +29,11 @@ case class DatasetTreatment(dsSource: String) {
 
   val schema = SchemaBuilder.record("testRecord").fields().
     requiredString("ID").requiredString("FirstName").requiredString("LastName")
-    .requiredString("Gender").requiredString("Zipcode").requiredString("Birthdate")
+    .requiredString("Gender").requiredString("Zipcode").requiredString("Age").requiredString("Birthdate")
     .requiredString("VaccineDate").requiredString("Vaccine").requiredString("Sideeffect")
     .requiredString("Sider").endRecord()
+  val schemaQ1 = SchemaBuilder.record("VaccinedPatient").fields().requiredString("ID").requiredString("Age").endRecord()
+
 
   val vaccines = Map("Pfizer" -> 40, "Moderna" -> 30, "AstraZeneca" -> 20, "SpoutnikV" -> 5, "CanSinoBio" -> 5)
   val sideeffects = Map("Injection site pain" -> "C0151828",
@@ -171,7 +173,10 @@ case class DatasetTreatment(dsSource: String) {
   }
 
   def addBirthday(x: Resource, startAge: Int, finishAge: Int): Model = {
-    val birth = faker.date().birthday(startAge, finishAge).toString
+    val bth = faker.date().birthday(startAge, finishAge)
+    val age = 2022 - (1900 + bth.getYear)
+    val birth = bth.toString
+    user.put("Age", age)
     user.put("Birthdate", birth)
     model.add(model.createStatement(
       model.getResource(x.getURI),
@@ -292,7 +297,7 @@ case class DatasetTreatment(dsSource: String) {
       addLastName(x)
       val gender = addGender(x)
       addZipcode(x)
-      addBirthday(x, 20, 30)
+      addBirthday(x, 23, 80)
       var pr = false
       if (gender.equals("Female")) {
         pr = Random.nextInt(100) < vaccinedProportion && Random.nextInt(100) < vaccinedFemaleProportion
@@ -342,6 +347,34 @@ case class DatasetTreatment(dsSource: String) {
         record.put("Vaccine", usersList(i).get("Vaccine"))
         record.put("Sideeffect", usersList(i).get("Sideeffect"))
         record.put("Sider", usersList(i).get("Sider"))
+        record.put("Age", usersList(i).get("Age"))
+        producer.send(new ProducerRecord[String, String](topic, i.toString, record.toString))
+
+      }
+    }catch{
+      case e:Exception => e.printStackTrace()
+    }finally {
+      producer.close()
+    }
+  }
+
+
+  def producerQ1() : Unit = {
+    val usersList = users.toList
+    val props : Properties = new Properties()
+    props.put("bootstrap.servers","localhost:9092")
+    props.put("key.serializer",
+      "org.apache.kafka.common.serialization.StringSerializer")
+    props.put("value.serializer",
+      "org.apache.kafka.common.serialization.StringSerializer")
+    props.put("acks","all")
+    val producer = new KafkaProducer[String, String](props)
+    val topic = "topic0"
+    try {
+      for (i <- 0 to usersList.length - 1) {
+        val record = new Record(schemaQ1)
+        record.put("ID", usersList(i).get("ID"))
+        record.put("Age", usersList(i).get("Age"))
         producer.send(new ProducerRecord[String, String](topic, i.toString, record.toString))
 
       }
