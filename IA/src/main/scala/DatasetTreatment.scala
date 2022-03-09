@@ -2,7 +2,7 @@ import com.github.javafaker.Faker
 import org.apache.jena.ontology.OntModelSpec
 import org.apache.jena.rdf.model.{Model, ModelFactory, Resource}
 import org.apache.jena.riot.{RDFDataMgr, RDFFormat}
-import org.apache.kafka.clients.producer.{KafkaProducer, ProducerRecord}
+import org.apache.kafka.clients.producer.{KafkaProducer, ProducerConfig, ProducerRecord}
 
 import java.io.{FileOutputStream, FileWriter, IOException}
 import java.text.SimpleDateFormat
@@ -12,6 +12,9 @@ import scala.util.control.Breaks.{break, breakable}
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.databind.node.ObjectNode
 import org.apache.kafka.clients.consumer.KafkaConsumer
+
+import org.apache.avro.generic.GenericData
+import org.apache.avro.generic.GenericRecord
 
 import scala.collection.JavaConverters._
 import org.apache.avro.SchemaBuilder
@@ -337,23 +340,26 @@ case class DatasetTreatment(dsSource: String) {
     val topic = "topic0"
     try {
       for (i <- 0 to usersList.length - 1) {
-        val record = new Record(schema)
-        record.put("ID", usersList(i).get("ID"))
-        record.put("FirstName", usersList(i).get("FirstName"))
-        record.put("LastName", usersList(i).get("LastName"))
-        record.put("Gender", usersList(i).get("Gender"))
-        record.put("Zipcode", usersList(i).get("Zipcode"))
-        record.put("Birthdate", usersList(i).get("Birthdate"))
-        record.put("VaccineDate", usersList(i).get("VaccineDate"))
-        record.put("Vaccine", usersList(i).get("Vaccine"))
-        record.put("Sideeffect", usersList(i).get("Sideeffect"))
-        record.put("Sider", usersList(i).get("Sider"))
-        record.put("Age", usersList(i).get("Age"))
-        producer.send(new ProducerRecord[String, String](topic, i.toString, record.toString))
+        val record = new GenericData.Record(schema)
+        if (!(usersList(i).get("Vaccine").toString == "\"None\"")) {
+          record.put("ID", usersList(i).get("ID"))
+          record.put("FirstName", usersList(i).get("FirstName"))
+          record.put("LastName", usersList(i).get("LastName"))
+          record.put("Gender", usersList(i).get("Gender"))
+          record.put("Zipcode", usersList(i).get("Zipcode"))
+          record.put("Birthdate", usersList(i).get("Birthdate"))
+          record.put("VaccineDate", usersList(i).get("VaccineDate"))
+          record.put("Vaccine", usersList(i).get("Vaccine"))
+          record.put("Sideeffect", usersList(i).get("Sideeffect"))
+          record.put("Sider", usersList(i).get("Sider"))
+          record.put("Age", usersList(i).get("Age"))
+          producer.send(new ProducerRecord[String, String](topic, i.toString, record.toString))
+        }
       }
     }catch{
       case e:Exception => e.printStackTrace()
     }finally {
+      producer.flush()
       producer.close()
     }
   }
@@ -394,7 +400,6 @@ case class DatasetTreatment(dsSource: String) {
     val stringSerde = Serdes.String
     val builder = new StreamsBuilder
     val patientLines = builder.stream("topic0")
-    patientLines
 
 
   }

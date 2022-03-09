@@ -6,9 +6,11 @@ scalaVersion := "2.13.8"
 
 //libraryDependencies += "org.apache.jena" % "jena-core" % "4.3.2"
 
-libraryDependencies += "org.slf4j" % "slf4j-api" % "1.7.9"
+resolvers ++= Seq(Resolver.sonatypeRepo("public"), "Confluent Maven Repo" at "https://packages.confluent.io/maven/")
 
-libraryDependencies += "org.slf4j" % "slf4j-simple" % "1.7.9"
+libraryDependencies += "org.slf4j" % "slf4j-api" % "1.7.36"
+
+libraryDependencies += "org.slf4j" % "slf4j-simple" % "1.7.36"
 
 libraryDependencies += "com.github.javafaker" % "javafaker" % "1.0.2"
 
