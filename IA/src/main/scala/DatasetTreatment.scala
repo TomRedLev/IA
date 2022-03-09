@@ -2,7 +2,7 @@ import com.github.javafaker.Faker
 import org.apache.jena.ontology.OntModelSpec
 import org.apache.jena.rdf.model.{Model, ModelFactory, Resource}
 import org.apache.jena.riot.{RDFDataMgr, RDFFormat}
-import org.apache.kafka.clients.producer.{KafkaProducer, ProducerConfig, ProducerRecord}
+import org.apache.kafka.clients.producer.{KafkaProducer, ProducerRecord}
 
 import java.io.{FileOutputStream, FileWriter, IOException}
 import java.text.SimpleDateFormat
@@ -12,16 +12,16 @@ import scala.util.control.Breaks.{break, breakable}
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.databind.node.ObjectNode
 import org.apache.kafka.clients.consumer.KafkaConsumer
-
 import org.apache.avro.generic.GenericData
-import org.apache.avro.generic.GenericRecord
+import org.apache.kafka.streams.KafkaStreams
+import org.apache.kafka.common.serialization.Serdes
+import org.apache.kafka.streams.StreamsConfig
 
 import scala.collection.JavaConverters._
 import org.apache.avro.SchemaBuilder
-import org.apache.avro.generic.GenericData.Record
-import org.apache.kafka.common.serialization.Serdes
-import org.apache.kafka.streams.kstream.{KTable, Predicate, Printed}
-import org.apache.kafka.streams.{KafkaStreams, StreamsBuilder, StreamsConfig}
+import org.apache.jena.atlas.json.JSON
+import org.apache.kafka.streams.kstream.{Consumed, Predicate}
+import org.apache.kafka.streams.StreamsBuilder
 
 import scala.collection.mutable.ListBuffer
 
@@ -376,13 +376,13 @@ case class DatasetTreatment(dsSource: String) {
     props.put("enable.auto.commit", "true")
     props.put("auto.commit.interval.ms", "1000")
     val consumer = new KafkaConsumer(props)
-    val topics = List("topic0")
+    val topics = List("AnonymousSideEffect")
     try {
       consumer.subscribe(topics.asJava)
       while (true) {
         val records = consumer.poll(10)
         for (record <- records.asScala) {
-          println(record.toString)
+          println(record.value())
         }
       }
     }catch{
@@ -393,14 +393,54 @@ case class DatasetTreatment(dsSource: String) {
   }
 
   def kafkaStream(): Unit = {
+    println("----------------- KAFKA STREAMS -----------------")
     val props = new Properties()
     props.put(StreamsConfig.APPLICATION_ID_CONFIG, "firstApp_id")
     props.put(StreamsConfig.BOOTSTRAP_SERVERS_CONFIG, "localhost:9092")
+    props.put(StreamsConfig.DEFAULT_KEY_SERDE_CLASS_CONFIG, Serdes.String.getClass.getName)
+    props.put(StreamsConfig.DEFAULT_VALUE_SERDE_CLASS_CONFIG, Serdes.String.getClass.getName)
+    val propsProd = new Properties()
+    propsProd.put("bootstrap.servers","localhost:9092")
+    propsProd.put("key.serializer",
+      "org.apache.kafka.common.serialization.StringSerializer")
+    propsProd.put("value.serializer",
+      "org.apache.kafka.common.serialization.StringSerializer")
+    propsProd.put("acks","all")
+    val producer = new KafkaProducer[String, String](propsProd)
     val streamingConfig = new StreamsConfig(props)
     val stringSerde = Serdes.String
     val builder = new StreamsBuilder
-    val patientLines = builder.stream("topic0")
+    val lines = builder.stream("topic0", Consumed.`with`(Serdes.String(), Serdes.String()))
+    lines.mapValues((k, v) => {
+      val json = JSON.parse(v)
+      json.put("FirstName", "*****")
+      json.put("LastName", "*****")
+      producer.send(new ProducerRecord[String, String]("AnonymousSideEffect", k.toString, json.toString))
+    })
+    val streams = new KafkaStreams(builder.build, props)
+    streams.start()
+    Thread.sleep(10000L)
+    streams.close()
+  }
 
-
+  def kafkaStreamQ3(): Unit = {
+    val props = new Properties()
+    props.put(StreamsConfig.APPLICATION_ID_CONFIG, "firstApp_id")
+    props.put(StreamsConfig.BOOTSTRAP_SERVERS_CONFIG, "localhost:9092")
+    props.put(StreamsConfig.DEFAULT_KEY_SERDE_CLASS_CONFIG, Serdes.String.getClass.getName)
+    props.put(StreamsConfig.DEFAULT_VALUE_SERDE_CLASS_CONFIG, Serdes.String.getClass.getName)
+    val streamingConfig = new StreamsConfig(props)
+    val stringSerde = Serdes.String
+    val builder = new StreamsBuilder
+    val lines = builder.stream("AnonymousSideEffect", Consumed.`with`(Serdes.String(), Serdes.String()))
+    lines.filter(new Predicate[String, String]() {
+      override def test(k: String, v: String): Boolean = {
+        v.contains("\"C0027497\"")
+      }})
+    lines.foreach((k, v) => println(v))
+    val streams = new KafkaStreams(builder.build, props)
+    streams.start()
+    Thread.sleep(10000L)
+    streams.close()
   }
 }

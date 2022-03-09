@@ -9,7 +9,8 @@ object Main extends App {
   ds.addDatasToEveryone(50, 100, 50)
   ds.save("final_version.ttl")
   ds.producer()
-  //ds.kafkaStream()
+  ds.kafkaStream()
+  //ds.kafkaStreamQ3()
   ds.consumer()
 }
 
