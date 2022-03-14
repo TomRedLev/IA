@@ -55,6 +55,21 @@ case class DatasetTreatment(dsSource: String) {
     "Injection site tenderness" -> "C0863083"
   )
 
+  var sideeffectscounts = Map("\"Injection site pain\"" -> 0,
+    "\"Fatigue\"" -> 0,
+    "\"Headhache\"" -> 0,
+    "\"Muscle pain\"" -> 0,
+    "\"Chills\"" -> 0,
+    "\"Joint pain\"" -> 0,
+    "\"Fever\"" -> 0,
+    "\"Injection site swelling\"" -> 0,
+    "\"Injection site redness\"" -> 0,
+    "\"Nausea\"" -> 0,
+    "\"Malaise\"" -> 0,
+    "\"Lymphadenopathy\"" -> 0,
+    "\"Injection site tenderness\"" -> 0
+  )
+
   val typeProp = "http://www.w3.org/1999/02/22-rdf-syntax-ns#type"
   val studRes = "http://swat.cse.lehigh.edu/onto/univ-bench.owl#UndergraduateStudent"
 
@@ -416,31 +431,20 @@ case class DatasetTreatment(dsSource: String) {
       json.put("FirstName", "*****")
       json.put("LastName", "*****")
       producer.send(new ProducerRecord[String, String]("AnonymousSideEffect", k.toString, json.toString))
+
+      // Q3 :
+      if (json.get("Sider").toString == "\"C0027497\"") {
+        println(v)
+      }
+
+      // Q4 :
+      sideeffectscounts = sideeffectscounts + (json.get("Sideeffect").toString -> (sideeffectscounts.get(json.get("Sideeffect").toString).get + 1))
     })
     val streams = new KafkaStreams(builder.build, props)
     streams.start()
-    Thread.sleep(10000L)
+    Thread.sleep(20000L)
     streams.close()
-  }
-
-  def kafkaStreamQ3(): Unit = {
-    val props = new Properties()
-    props.put(StreamsConfig.APPLICATION_ID_CONFIG, "firstApp_id")
-    props.put(StreamsConfig.BOOTSTRAP_SERVERS_CONFIG, "localhost:9092")
-    props.put(StreamsConfig.DEFAULT_KEY_SERDE_CLASS_CONFIG, Serdes.String.getClass.getName)
-    props.put(StreamsConfig.DEFAULT_VALUE_SERDE_CLASS_CONFIG, Serdes.String.getClass.getName)
-    val streamingConfig = new StreamsConfig(props)
-    val stringSerde = Serdes.String
-    val builder = new StreamsBuilder
-    val lines = builder.stream("AnonymousSideEffect", Consumed.`with`(Serdes.String(), Serdes.String()))
-    lines.filter(new Predicate[String, String]() {
-      override def test(k: String, v: String): Boolean = {
-        v.contains("\"C0027497\"")
-      }})
-    lines.foreach((k, v) => println(v))
-    val streams = new KafkaStreams(builder.build, props)
-    streams.start()
-    Thread.sleep(10000L)
-    streams.close()
+    sideeffectscounts.foreach(x => println(x))
+    println("----------------- FIN KAFKA STREAMS -----------------")
   }
 }

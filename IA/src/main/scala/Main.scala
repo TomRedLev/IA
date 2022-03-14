@@ -10,13 +10,12 @@ object Main extends App {
   ds.save("final_version.ttl")
   ds.producer()
   ds.kafkaStream()
-  //ds.kafkaStreamQ3()
-  ds.consumer()
+  //ds.consumer()
 }
 
 // Commandes à lancer :
 // Dans ZooKeeper :
-// ./zkServer.sh start /home/tom/Documents/Logiciels/apache-zookeeper-3.7.0-bin/conf/zoo.cfg
+// ./zkServer.sh start ../conf/zoo.cfg
 // Dans Kafka :
 // ./kafka-server-start.sh -daemon ../config/server.properties
 // ./kafka-topics.sh --create --bootstrap-server localhost:9092 --replication-factor 1 --partitions 1 --topic topic0
