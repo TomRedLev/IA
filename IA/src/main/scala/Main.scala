@@ -10,7 +10,8 @@ object Main extends App {
   ds.save("final_version.ttl")
   ds.producer()
   ds.kafkaStream()
-  //ds.consumer()
+  ds.consumer(List("AnonymousSideEffect"))
+  //ds.consumer(List("AnonymousSideEffect5Part"))
 }
 
 // Commandes à lancer :
@@ -20,3 +21,4 @@ object Main extends App {
 // ./kafka-server-start.sh -daemon ../config/server.properties
 // ./kafka-topics.sh --create --bootstrap-server localhost:9092 --replication-factor 1 --partitions 1 --topic topic0
 // ./kafka-topics.sh --create --bootstrap-server localhost:9092 --replication-factor 1 --partitions 1 --topic AnonymousSideEffect
+// ./kafka-topics.sh --create --bootstrap-server localhost:9092 --replication-factor 1 --partitions 5 --topic AnonymousSideEffect5Part

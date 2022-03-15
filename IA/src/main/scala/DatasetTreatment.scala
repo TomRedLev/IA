@@ -380,7 +380,7 @@ case class DatasetTreatment(dsSource: String) {
   }
 
 
-  def consumer() : Unit = {
+  def consumer(topics : List[String]) : Unit = {
     val props:Properties = new Properties()
     props.put("group.id", "test")
     props.put("bootstrap.servers","localhost:9092")
@@ -391,7 +391,7 @@ case class DatasetTreatment(dsSource: String) {
     props.put("enable.auto.commit", "true")
     props.put("auto.commit.interval.ms", "1000")
     val consumer = new KafkaConsumer(props)
-    val topics = List("AnonymousSideEffect")
+    //val topics = List("AnonymousSideEffect")
     try {
       consumer.subscribe(topics.asJava)
       while (true) {
@@ -439,11 +439,33 @@ case class DatasetTreatment(dsSource: String) {
 
       // Q4 :
       sideeffectscounts = sideeffectscounts + (json.get("Sideeffect").toString -> (sideeffectscounts.get(json.get("Sideeffect").toString).get + 1))
+
+      // Q5 :
+
+      if (json.get("Vaccine") == "\"Pfizer\"") {
+        producer.send(new ProducerRecord[String, String]("AnonymousSideEffect5Part", 0, k.toString, json.toString))
+      }
+      else if (json.get("Vaccine") == "\"Moderna\"") {
+        producer.send(new ProducerRecord[String, String]("AnonymousSideEffect5Part", 1, k.toString, json.toString))
+      }
+      else if (json.get("Vaccine") == "\"AstraZeneca\"") {
+        producer.send(new ProducerRecord[String, String]("AnonymousSideEffect5Part", 2, k.toString, json.toString))
+      }
+      else if (json.get("Vaccine") == "\"SpoutnikV\"") {
+        producer.send(new ProducerRecord[String, String]("AnonymousSideEffect5Part", 3, k.toString, json.toString))
+      }
+      else if (json.get("Vaccine") == "\"CanSinoBio\"") {
+        producer.send(new ProducerRecord[String, String]("AnonymousSideEffect5Part", 4, k.toString, json.toString))
+      }
+
+
     })
     val streams = new KafkaStreams(builder.build, props)
     streams.start()
     Thread.sleep(20000L)
     streams.close()
+
+    // Q4 :
     sideeffectscounts.foreach(x => println(x))
     println("----------------- FIN KAFKA STREAMS -----------------")
   }
