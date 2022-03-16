@@ -20,6 +20,7 @@ import org.apache.kafka.streams.StreamsConfig
 import scala.collection.JavaConverters._
 import org.apache.avro.SchemaBuilder
 import org.apache.jena.atlas.json.JSON
+import org.apache.kafka.common.TopicPartition
 import org.apache.kafka.streams.kstream.{Consumed, Predicate}
 import org.apache.kafka.streams.StreamsBuilder
 
@@ -442,19 +443,20 @@ case class DatasetTreatment(dsSource: String) {
 
       // Q5 :
 
-      if (json.get("Vaccine") == "\"Pfizer\"") {
+      if (json.get("Vaccine").toString == "\"Pfizer\"") {
+        println("pfizer")
         producer.send(new ProducerRecord[String, String]("AnonymousSideEffect5Part", 0, k.toString, json.toString))
       }
-      else if (json.get("Vaccine") == "\"Moderna\"") {
+      else if (json.get("Vaccine").toString == "\"Moderna\"") {
         producer.send(new ProducerRecord[String, String]("AnonymousSideEffect5Part", 1, k.toString, json.toString))
       }
-      else if (json.get("Vaccine") == "\"AstraZeneca\"") {
+      else if (json.get("Vaccine").toString == "\"AstraZeneca\"") {
         producer.send(new ProducerRecord[String, String]("AnonymousSideEffect5Part", 2, k.toString, json.toString))
       }
-      else if (json.get("Vaccine") == "\"SpoutnikV\"") {
+      else if (json.get("Vaccine").toString == "\"SpoutnikV\"") {
         producer.send(new ProducerRecord[String, String]("AnonymousSideEffect5Part", 3, k.toString, json.toString))
       }
-      else if (json.get("Vaccine") == "\"CanSinoBio\"") {
+      else if (json.get("Vaccine").toString == "\"CanSinoBio\"") {
         producer.send(new ProducerRecord[String, String]("AnonymousSideEffect5Part", 4, k.toString, json.toString))
       }
 
@@ -468,5 +470,32 @@ case class DatasetTreatment(dsSource: String) {
     // Q4 :
     sideeffectscounts.foreach(x => println(x))
     println("----------------- FIN KAFKA STREAMS -----------------")
+  }
+
+
+  def consumerPartitions(topics : List[TopicPartition]) : Unit = {
+    val props:Properties = new Properties()
+    props.put("group.id", "test")
+    props.put("bootstrap.servers","localhost:9092")
+    props.put("key.deserializer",
+      "org.apache.kafka.common.serialization.StringDeserializer")
+    props.put("value.deserializer",
+      "org.apache.kafka.common.serialization.StringDeserializer")
+    props.put("enable.auto.commit", "true")
+    props.put("auto.commit.interval.ms", "1000")
+    val consumer = new KafkaConsumer(props)
+    try {
+      consumer.assign(topics.asJava)
+      while (true) {
+        val records = consumer.poll(10)
+        for (record <- records.asScala) {
+          println(record.value())
+        }
+      }
+    }catch{
+      case e:Exception => e.printStackTrace()
+    }finally {
+      consumer.close()
+    }
   }
 }

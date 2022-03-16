@@ -1,3 +1,5 @@
+import org.apache.kafka.common.TopicPartition
+
 object Main extends App {
   val ds = DatasetTreatment("file:lubm1.ttl")
   ds.load()
@@ -10,8 +12,8 @@ object Main extends App {
   ds.save("final_version.ttl")
   ds.producer()
   ds.kafkaStream()
-  ds.consumer(List("AnonymousSideEffect"))
-  //ds.consumer(List("AnonymousSideEffect5Part"))
+  //ds.consumer(List("AnonymousSideEffect"))
+  ds.consumerPartitions(List(new TopicPartition("AnonymousSideEffect5Part", 0)))
 }
 
 // Commandes à lancer :
