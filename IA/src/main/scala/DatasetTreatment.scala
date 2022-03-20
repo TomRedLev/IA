@@ -56,21 +56,18 @@ case class DatasetTreatment(dsSource: String) {
     "Injection site tenderness" -> "C0863083"
   )
 
-  var sideeffectscounts = Map("\"Injection site pain\"" -> 0,
-    "\"Fatigue\"" -> 0,
-    "\"Headhache\"" -> 0,
-    "\"Muscle pain\"" -> 0,
-    "\"Chills\"" -> 0,
-    "\"Joint pain\"" -> 0,
-    "\"Fever\"" -> 0,
-    "\"Injection site swelling\"" -> 0,
-    "\"Injection site redness\"" -> 0,
-    "\"Nausea\"" -> 0,
-    "\"Malaise\"" -> 0,
-    "\"Lymphadenopathy\"" -> 0,
-    "\"Injection site tenderness\"" -> 0
-  )
+  var sideeffectscounts = Map("\"Injection site pain\"" -> 0, "\"Fatigue\"" -> 0, "\"Headhache\"" -> 0, "\"Muscle pain\"" -> 0, "\"Chills\"" -> 0, "\"Joint pain\"" -> 0, "\"Fever\"" -> 0, "\"Injection site swelling\"" -> 0, "\"Injection site redness\"" -> 0, "\"Nausea\"" -> 0, "\"Malaise\"" -> 0, "\"Lymphadenopathy\"" -> 0, "\"Injection site tenderness\"" -> 0)
 
+
+  var agesideeffectscounts = Map(
+    "20-30" -> Map("\"Injection site pain\"" -> 0, "\"Fatigue\"" -> 0, "\"Headhache\"" -> 0, "\"Muscle pain\"" -> 0, "\"Chills\"" -> 0, "\"Joint pain\"" -> 0, "\"Fever\"" -> 0, "\"Injection site swelling\"" -> 0, "\"Injection site redness\"" -> 0, "\"Nausea\"" -> 0, "\"Malaise\"" -> 0, "\"Lymphadenopathy\"" -> 0, "\"Injection site tenderness\"" -> 0),
+    "30-40" -> Map("\"Injection site pain\"" -> 0, "\"Fatigue\"" -> 0, "\"Headhache\"" -> 0, "\"Muscle pain\"" -> 0, "\"Chills\"" -> 0, "\"Joint pain\"" -> 0, "\"Fever\"" -> 0, "\"Injection site swelling\"" -> 0, "\"Injection site redness\"" -> 0, "\"Nausea\"" -> 0, "\"Malaise\"" -> 0, "\"Lymphadenopathy\"" -> 0, "\"Injection site tenderness\"" -> 0),
+    "40-50" -> Map("\"Injection site pain\"" -> 0, "\"Fatigue\"" -> 0, "\"Headhache\"" -> 0, "\"Muscle pain\"" -> 0, "\"Chills\"" -> 0, "\"Joint pain\"" -> 0, "\"Fever\"" -> 0, "\"Injection site swelling\"" -> 0, "\"Injection site redness\"" -> 0, "\"Nausea\"" -> 0, "\"Malaise\"" -> 0, "\"Lymphadenopathy\"" -> 0, "\"Injection site tenderness\"" -> 0),
+    "50-60" -> Map("\"Injection site pain\"" -> 0, "\"Fatigue\"" -> 0, "\"Headhache\"" -> 0, "\"Muscle pain\"" -> 0, "\"Chills\"" -> 0, "\"Joint pain\"" -> 0, "\"Fever\"" -> 0, "\"Injection site swelling\"" -> 0, "\"Injection site redness\"" -> 0, "\"Nausea\"" -> 0, "\"Malaise\"" -> 0, "\"Lymphadenopathy\"" -> 0, "\"Injection site tenderness\"" -> 0),
+    "60-70" -> Map("\"Injection site pain\"" -> 0, "\"Fatigue\"" -> 0, "\"Headhache\"" -> 0, "\"Muscle pain\"" -> 0, "\"Chills\"" -> 0, "\"Joint pain\"" -> 0, "\"Fever\"" -> 0, "\"Injection site swelling\"" -> 0, "\"Injection site redness\"" -> 0, "\"Nausea\"" -> 0, "\"Malaise\"" -> 0, "\"Lymphadenopathy\"" -> 0, "\"Injection site tenderness\"" -> 0),
+    "70-80" -> Map("\"Injection site pain\"" -> 0, "\"Fatigue\"" -> 0, "\"Headhache\"" -> 0, "\"Muscle pain\"" -> 0, "\"Chills\"" -> 0, "\"Joint pain\"" -> 0, "\"Fever\"" -> 0, "\"Injection site swelling\"" -> 0, "\"Injection site redness\"" -> 0, "\"Nausea\"" -> 0, "\"Malaise\"" -> 0, "\"Lymphadenopathy\"" -> 0, "\"Injection site tenderness\"" -> 0),
+    "80-90" -> Map("\"Injection site pain\"" -> 0, "\"Fatigue\"" -> 0, "\"Headhache\"" -> 0, "\"Muscle pain\"" -> 0, "\"Chills\"" -> 0, "\"Joint pain\"" -> 0, "\"Fever\"" -> 0, "\"Injection site swelling\"" -> 0, "\"Injection site redness\"" -> 0, "\"Nausea\"" -> 0, "\"Malaise\"" -> 0, "\"Lymphadenopathy\"" -> 0, "\"Injection site tenderness\"" -> 0)
+  )
   val typeProp = "http://www.w3.org/1999/02/22-rdf-syntax-ns#type"
   val studRes = "http://swat.cse.lehigh.edu/onto/univ-bench.owl#UndergraduateStudent"
 
@@ -487,14 +484,46 @@ case class DatasetTreatment(dsSource: String) {
     try {
       consumer.assign(topics.asJava)
       while (true) {
-        val records = consumer.poll(10)
+        val records = consumer.poll(100)
         for (record <- records.asScala) {
-          println(record.value())
+          val json = JSON.parse(record.value().toString)
+          val age = json.get("Age").toString.toInt
+          if (age >= 20 && age < 30) {
+            val tmp = agesideeffectscounts.get("20-30").get + (json.get("Sideeffect").toString -> (agesideeffectscounts.get("20-30").get.get(json.get("Sideeffect").toString).get + 1))
+            agesideeffectscounts = agesideeffectscounts + ("20-30" -> tmp)
+          }
+          if (age >= 30 && age < 40) {
+            val tmp = agesideeffectscounts.get("30-40").get + (json.get("Sideeffect").toString -> (agesideeffectscounts.get("30-40").get.get(json.get("Sideeffect").toString).get + 1))
+            agesideeffectscounts = agesideeffectscounts + ("30-40" -> tmp)
+          }
+          if (age >= 40 && age < 50) {
+            val tmp = agesideeffectscounts.get("40-50").get + (json.get("Sideeffect").toString -> (agesideeffectscounts.get("40-50").get.get(json.get("Sideeffect").toString).get + 1))
+            agesideeffectscounts = agesideeffectscounts + ("40-50" -> tmp)
+          }
+          if (age >= 50 && age < 60) {
+            val tmp = agesideeffectscounts.get("50-60").get + (json.get("Sideeffect").toString -> (agesideeffectscounts.get("50-60").get.get(json.get("Sideeffect").toString).get + 1))
+            agesideeffectscounts = agesideeffectscounts + ("50-60" -> tmp)
+          }
+          if (age >= 60 && age < 70) {
+            val tmp = agesideeffectscounts.get("60-70").get + (json.get("Sideeffect").toString -> (agesideeffectscounts.get("60-70").get.get(json.get("Sideeffect").toString).get + 1))
+            agesideeffectscounts = agesideeffectscounts + ("60-70" -> tmp)
+          }
+          if (age >= 70 && age < 80) {
+            val tmp = agesideeffectscounts.get("70-80").get + (json.get("Sideeffect").toString -> (agesideeffectscounts.get("70-80").get.get(json.get("Sideeffect").toString).get + 1))
+            agesideeffectscounts = agesideeffectscounts + ("70-80" -> tmp)
+          }
+          if (age >= 80 && age < 90) {
+            val tmp = agesideeffectscounts.get("80-90").get + (json.get("Sideeffect").toString -> (agesideeffectscounts.get("80-90").get.get(json.get("Sideeffect").toString).get + 1))
+            agesideeffectscounts = agesideeffectscounts + ("80-90" -> tmp)
+          }
+
         }
+        //agesideeffectscounts.foreach(x => println(x))
       }
     }catch{
       case e:Exception => e.printStackTrace()
     }finally {
+      agesideeffectscounts.foreach(x => println(x))
       consumer.close()
     }
   }

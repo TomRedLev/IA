@@ -14,6 +14,7 @@ object Main extends App {
   ds.kafkaStream()
   //ds.consumer(List("AnonymousSideEffect"))
   ds.consumerPartitions(List(new TopicPartition("AnonymousSideEffect5Part", 0)))
+  ds.consumerPartitions(List(new TopicPartition("AnonymousSideEffect5Part", 1)))
 }
 
 // Commandes à lancer :
