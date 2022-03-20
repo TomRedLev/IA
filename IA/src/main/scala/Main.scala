@@ -15,6 +15,10 @@ object Main extends App {
   //ds.consumer(List("AnonymousSideEffect"))
   ds.consumerPartitions(List(new TopicPartition("AnonymousSideEffect5Part", 0)))
   ds.consumerPartitions(List(new TopicPartition("AnonymousSideEffect5Part", 1)))
+  ds.consumerPartitions(List(new TopicPartition("AnonymousSideEffect5Part", 2)))
+  ds.consumerPartitions(List(new TopicPartition("AnonymousSideEffect5Part", 3)))
+  ds.consumerPartitions(List(new TopicPartition("AnonymousSideEffect5Part", 4)))
+
 }
 
 // Commandes à lancer :

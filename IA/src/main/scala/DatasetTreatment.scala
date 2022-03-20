@@ -472,7 +472,7 @@ case class DatasetTreatment(dsSource: String) {
 
   def consumerPartitions(topics : List[TopicPartition]) : Unit = {
     val props:Properties = new Properties()
-    props.put("group.id", "test")
+    props.put("group.id", "sideeffectgroup")
     props.put("bootstrap.servers","localhost:9092")
     props.put("key.deserializer",
       "org.apache.kafka.common.serialization.StringDeserializer")
